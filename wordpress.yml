@@ -1,0 +1,49 @@
+version: '3.3'
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: RootAdmin
+      MYSQL_USER: wordpress
+    volumes:
+     - /opt/db:/var/lib/mysql
+    networks:
+     - wordnet
+    logging:
+      driver: json-file
+    deploy:
+      update_config:
+        delay: 20s
+        failure_action: rollback
+      placement:
+        constraints:
+         - node.role == worker
+         - node.labels.Name == worker
+  wordpress:
+    image: wordpress:latest
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_USER: wordpress
+    ports:
+     - 8000:80
+    volumes:
+     - /opt/wordpress:/var/www/html
+    networks:
+     - wordnet
+    logging:
+      driver: json-file
+    deploy:
+      update_config:
+        delay: 20s
+        failure_action: rollback
+      placement:
+        constraints:
+         - node.role == worker
+         - node.labels.Name == worker
+networks:
+  wordnet:
+    driver: overlay
